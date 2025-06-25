@@ -54,7 +54,12 @@ export const App = () => {
     sendDataToGA({
       sum_cred: amount.toFixed(2),
       srok_kredita: 1,
-      platezh_mes: '0',
+      platezh_mes:
+        radioButton === 'Без залога'
+          ? calculateMonthlyPayment(0.339, 12, 12, amount).toFixed(2)
+          : radioButton === 'Авто'
+          ? calculateMonthlyPayment(0.27, 12, 12, amount).toFixed(2)
+          : calculateMonthlyPayment(0.2807, 12, 12, amount).toFixed(2),
       chosen_option: swiperPaymentToGa[radioButton],
     }).then(() => {
       LS.setItem(LSKeys.ShowThx, true);
