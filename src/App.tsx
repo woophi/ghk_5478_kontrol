@@ -11,7 +11,7 @@ import { BanknotesMIcon } from '@alfalab/icons-glyph/BanknotesMIcon';
 import { CarMIcon } from '@alfalab/icons-glyph/CarMIcon';
 import { LaptopPhoneMIcon } from '@alfalab/icons-glyph/LaptopPhoneMIcon';
 import { RubOffMIcon } from '@alfalab/icons-glyph/RubOffMIcon';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { LS, LSKeys } from './ls';
 import { appSt } from './style.css';
 import { ThxLayout } from './thx/ThxLayout';
@@ -29,12 +29,19 @@ const swiperPaymentToGa: Record<string, GaPayload['chosen_option']> = {
   Недвижимость: 'property',
 };
 
+const minMaxLoanBasedOnSelection: Record<string, { min: number; max: number }> = {
+  'Без залога': { min: 30_000, max: 7_500_000 },
+  Авто: { min: 30_000, max: 7_500_000 },
+  Недвижимость: { min: 500_000, max: 30_000_000 },
+};
+
 export const App = () => {
   const [loading, setLoading] = useState(false);
   const [thx, setThx] = useState(LS.getItem(LSKeys.ShowThx, false));
-  const [amount, setAmount] = useState(1_900_000);
   const [radioButton, setRadioButton] = useState('Без залога');
+  const [amount, setAmount] = useState(minMaxLoanBasedOnSelection[radioButton].max);
   const [step, setStep] = useState(0);
+  const { min: MIN_AMOUNT, max: MAX_AMOUNT } = minMaxLoanBasedOnSelection[radioButton];
 
   const handleSumSliderChange = ({ value }: { value: number }) => {
     setAmount(value);
@@ -47,6 +54,16 @@ export const App = () => {
   const formatPipsValue = (value: number) => `${value.toLocaleString('ru-RU')} ₽`;
 
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+  useEffect(() => {
+    const { max: maxAmount } = minMaxLoanBasedOnSelection['Авто'];
+    const { min: minAmount } = minMaxLoanBasedOnSelection['Недвижимость'];
+    if (amount > maxAmount) {
+      handleSumSliderChange({ value: maxAmount });
+    } else if (amount < minAmount && radioButton === 'Недвижимость') {
+      handleSumSliderChange({ value: minAmount });
+    }
+  }, [radioButton]);
 
   const submit = () => {
     setLoading(true);
@@ -94,13 +111,13 @@ export const App = () => {
             sliderValue={amount}
             onInputChange={handleSumInputChange}
             onSliderChange={handleSumSliderChange}
-            onBlur={() => setAmount(prev => clamp(prev, 50_000, 1_900_000))}
-            min={50_000}
-            max={1_900_000}
-            range={{ min: 50_000, max: 1_900_000 }}
+            onBlur={() => setAmount(prev => clamp(prev, MIN_AMOUNT, MAX_AMOUNT))}
+            min={MIN_AMOUNT}
+            max={MAX_AMOUNT}
+            range={{ min: MIN_AMOUNT, max: MAX_AMOUNT }}
             pips={{
               mode: 'values',
-              values: [50_000, 1_900_000],
+              values: [MIN_AMOUNT, MAX_AMOUNT],
               format: { to: formatPipsValue },
             }}
             step={1}
