@@ -308,7 +308,12 @@ export const App = () => {
             <div className={appSt.sumCard} style={{ borderRadius: 0, marginTop: '-1px' }}>
               {radioButton === 'Без залога' && (
                 <Typography.Text tag="p" view="primary-large" weight="bold" defaultMargins={false}>
-                  {calculateMonthlyPayment(0.339, 12, 12, amount).toLocaleString('ru-RU', {
+                  {calculateMonthlyPayment(
+                    0.339,
+                    12,
+                    minMaxPeriodBasedOnSelection['Без залога'].max * 12,
+                    amount,
+                  ).toLocaleString('ru-RU', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}{' '}
@@ -318,17 +323,25 @@ export const App = () => {
 
               {radioButton === 'Авто' && (
                 <Typography.Text tag="p" view="primary-large" weight="bold" defaultMargins={false}>
-                  {calculateMonthlyPayment(0.27, 12, 12, amount).toLocaleString('ru-RU', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}{' '}
+                  {calculateMonthlyPayment(0.27, 12, minMaxPeriodBasedOnSelection['Авто'].max * 12, amount).toLocaleString(
+                    'ru-RU',
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    },
+                  )}{' '}
                   ₽
                 </Typography.Text>
               )}
 
               {radioButton === 'Недвижимость' && (
                 <Typography.Text tag="p" view="primary-large" weight="bold" defaultMargins={false}>
-                  {calculateMonthlyPayment(0.2807, 12, 12, amount).toLocaleString('ru-RU', {
+                  {calculateMonthlyPayment(
+                    0.2807,
+                    12,
+                    minMaxPeriodBasedOnSelection['Недвижимость'].max * 12,
+                    amount,
+                  ).toLocaleString('ru-RU', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}{' '}
