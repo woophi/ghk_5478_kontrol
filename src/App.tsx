@@ -35,6 +35,12 @@ const minMaxLoanBasedOnSelection: Record<string, { min: number; max: number }> =
   Недвижимость: { min: 500_000, max: 30_000_000 },
 };
 
+const minMaxPeriodBasedOnSelection: Record<string, { min: number; max: number }> = {
+  'Без залога': { min: 1, max: 5 },
+  Авто: { min: 1, max: 5 },
+  Недвижимость: { min: 1, max: 15 },
+};
+
 export const App = () => {
   const [loading, setLoading] = useState(false);
   const [thx, setThx] = useState(LS.getItem(LSKeys.ShowThx, false));
@@ -42,6 +48,7 @@ export const App = () => {
   const [amount, setAmount] = useState(minMaxLoanBasedOnSelection[radioButton].max);
   const [step, setStep] = useState(0);
   const { min: MIN_AMOUNT, max: MAX_AMOUNT } = minMaxLoanBasedOnSelection[radioButton];
+  const { max: maxYears } = minMaxPeriodBasedOnSelection[radioButton];
 
   const handleSumSliderChange = ({ value }: { value: number }) => {
     setAmount(value);
@@ -56,13 +63,8 @@ export const App = () => {
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
   useEffect(() => {
-    const { max: maxAmount } = minMaxLoanBasedOnSelection['Авто'];
-    const { min: minAmount } = minMaxLoanBasedOnSelection['Недвижимость'];
-    if (amount > maxAmount) {
-      handleSumSliderChange({ value: maxAmount });
-    } else if (amount < minAmount && radioButton === 'Недвижимость') {
-      handleSumSliderChange({ value: minAmount });
-    }
+    const { max: maxAmount } = minMaxLoanBasedOnSelection[radioButton];
+    handleSumSliderChange({ value: maxAmount });
   }, [radioButton]);
 
   const submit = () => {
@@ -70,13 +72,13 @@ export const App = () => {
 
     sendDataToGA({
       sum_cred: amount.toFixed(2),
-      srok_kredita: 1,
+      srok_kredita: maxYears,
       platezh_mes:
         radioButton === 'Без залога'
-          ? calculateMonthlyPayment(0.339, 12, 12, amount).toFixed(2)
+          ? calculateMonthlyPayment(0.339, 12, maxYears * 12, amount).toFixed(2)
           : radioButton === 'Авто'
-          ? calculateMonthlyPayment(0.27, 12, 12, amount).toFixed(2)
-          : calculateMonthlyPayment(0.2807, 12, 12, amount).toFixed(2),
+          ? calculateMonthlyPayment(0.27, 12, maxYears * 12, amount).toFixed(2)
+          : calculateMonthlyPayment(0.2807, 12, maxYears * 12, amount).toFixed(2),
       chosen_option: swiperPaymentToGa[radioButton],
     }).then(() => {
       LS.setItem(LSKeys.ShowThx, true);
@@ -140,7 +142,12 @@ export const App = () => {
                 </Typography.Text>
                 <Gap size={4} />
                 <Typography.Text tag="p" view="primary-large" weight="bold" style={{ marginBottom: 0 }}>
-                  {calculateMonthlyPayment(0.339, 12, 12, amount).toLocaleString('ru-RU', {
+                  {calculateMonthlyPayment(
+                    0.339,
+                    12,
+                    minMaxPeriodBasedOnSelection['Без залога'].max * 12,
+                    amount,
+                  ).toLocaleString('ru-RU', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}{' '}
@@ -176,10 +183,13 @@ export const App = () => {
                 </Typography.Text>
                 <Gap size={4} />
                 <Typography.Text tag="p" view="primary-large" weight="bold" style={{ marginBottom: 0 }}>
-                  {calculateMonthlyPayment(0.27, 12, 12, amount).toLocaleString('ru-RU', {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}{' '}
+                  {calculateMonthlyPayment(0.27, 12, minMaxPeriodBasedOnSelection['Авто'].max * 12, amount).toLocaleString(
+                    'ru-RU',
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    },
+                  )}{' '}
                   ₽ в месяц
                 </Typography.Text>
               </div>
@@ -212,7 +222,12 @@ export const App = () => {
                 </Typography.Text>
                 <Gap size={4} />
                 <Typography.Text tag="p" view="primary-large" weight="bold" style={{ marginBottom: 0 }}>
-                  {calculateMonthlyPayment(0.2807, 12, 12, amount).toLocaleString('ru-RU', {
+                  {calculateMonthlyPayment(
+                    0.2807,
+                    12,
+                    minMaxPeriodBasedOnSelection['Недвижимость'].max * 12,
+                    amount,
+                  ).toLocaleString('ru-RU', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}{' '}
@@ -283,7 +298,7 @@ export const App = () => {
             <Divider className={appSt.divider} />
             <div className={appSt.sumCard} style={{ borderRadius: 0, marginTop: '-1px' }}>
               <Typography.Text tag="p" view="primary-large" weight="bold" defaultMargins={false}>
-                На 1 год
+                На {maxYears} лет
               </Typography.Text>
               <Typography.Text tag="p" view="primary-small" color="secondary" defaultMargins={false}>
                 Срок кредита
