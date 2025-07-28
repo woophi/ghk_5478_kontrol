@@ -63,8 +63,13 @@ export const App = () => {
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
   useEffect(() => {
-    const { max: maxAmount } = minMaxLoanBasedOnSelection[radioButton];
-    handleSumSliderChange({ value: maxAmount });
+    const { max: maxAmount, min: minAmount } = minMaxLoanBasedOnSelection[radioButton];
+    if (amount > maxAmount) {
+      handleSumSliderChange({ value: maxAmount });
+    }
+    if (amount < minAmount) {
+      handleSumSliderChange({ value: minAmount });
+    }
   }, [radioButton]);
 
   const submit = () => {
