@@ -45,7 +45,7 @@ export const App = () => {
   const [loading, setLoading] = useState(false);
   const [thx, setThx] = useState(LS.getItem(LSKeys.ShowThx, false));
   const [radioButton, setRadioButton] = useState('Без залога');
-  const [amount, setAmount] = useState(minMaxLoanBasedOnSelection[radioButton].max);
+  const [amount, setAmount] = useState(1_000_000);
   const [step, setStep] = useState(0);
   const { min: MIN_AMOUNT, max: MAX_AMOUNT } = minMaxLoanBasedOnSelection[radioButton];
   const { max: maxYears } = minMaxPeriodBasedOnSelection[radioButton];
